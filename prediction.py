@@ -52,18 +52,18 @@ def linear(desired_distance, pace):
 	return predicted_time
 
 def riegel(desired_distance, distance, pace, degradation_coefficient):
-    # T2 = T1 * (D2 / D1)^C
+	# T2 = T1 * (D2 / D1)^C
 	time = get_time_by_pace(distance, pace)
 	predicted_time = seconds_to_time(time_to_seconds(time) * ( desired_distance / distance ) ** degradation_coefficient)
 
 	return predicted_time
 
 def get_coefficient_by_hr(hr):
-    return 1
+	return 1
 
 def get_coefficient_by_grade(grade):
-    # 3% should be the highest coefficient
-    # 0% should be the lowest coefficient
+	# 3% should be the highest coefficient
+	# 0% should be the lowest coefficient
 
 	# 3 = 100% of the (high-low)
 	# N = X%
