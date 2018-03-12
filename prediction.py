@@ -1,15 +1,19 @@
+# -*- coding: utf8 -*-
 import datetime
+import csv
 
 degradation_coefficient_low = 1.06
 degradation_coefficient_high = 1.1
 max_grade = 3
 
-def get_data():
-	data = [
-		{'time': '00:57:02', 'distance': 9.63, 'pace': '5:55', 'gap': '5:32', 'hr': 156, 'elevation': 214},
-		{'time': '00:49:34', 'distance': 8.56, 'pace': '5:47', 'gap': '5:28', 'hr': 161, 'elevation': 169},
-		{'time': '01:26:13', 'distance': 15.1, 'pace': '5:43', 'gap': '5:21', 'hr': 161, 'elevation': 307},
-	]
+def get_data(filename):
+	reader = csv.DictReader(open(filename, 'rb'))
+	data = []
+	for row in reader:
+		for key, value in row.iteritems():
+			if key in ['distance', 'hr', 'elevation']:
+				row[key] = float(row[key])
+		data.append(row)
 
 	return data
 
@@ -84,7 +88,9 @@ def get_grade(distance, elevation):
 def calculate(distance, elevation):
 	degradation_coefficient = get_coefficient_by_grade(get_grade(distance, elevation))
 
-	for num, run in enumerate(get_data()):
+	data = get_data('strava.csv')
+
+	for num, run in enumerate(data):
 		print "Run %s" % (num+1)
 
 		print "Linear Pace prediction: %s" % linear(distance, get_pace(run['distance'], run['time']))
