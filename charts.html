@@ -13,6 +13,16 @@
         
       function drawChart() {
 
+        var labels = {
+          'PRGL': 'Riegel GAP (1.06)',
+          'LPG0': 'Linear GAP',
+          'PR0L': 'Riegel (1.06)',
+          'PR0M': 'Riegel grade (1.07)',
+          'PR0H': 'Riegel (1.10)', 
+          'PRGH': 'Riegel GAP (1.10)',
+          'LP00': 'Linear',
+        };
+
         var jsonData = $.ajax({
             url: "https://raw.githubusercontent.com/thesun2003/marathon-prediction/master/output.json?cachebreak=" + Math.random(100000),
             dataType: "json",
@@ -48,7 +58,7 @@
 
         for (var predictionType in jsonData[num]) {
           if (!isColummnsPopulated) {
-            data.addColumn('datetime', predictionType);
+            data.addColumn({'type': 'datetime', 'label': labels[predictionType]});
           }
           row.push({v: new Date('May 5, 2018 ' + jsonData[num][predictionType]['time']), f:jsonData[num][predictionType]['time']});
         }
