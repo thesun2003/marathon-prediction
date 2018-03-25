@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import datetime
 import csv
+import json
 
 degradation_coefficient_low = 1.06
 degradation_coefficient_high = 1.1
@@ -16,6 +17,10 @@ def get_data(filename):
 		data.append(row)
 
 	return data
+
+def save_json_data(filename, data):
+	with open(filename, 'w') as fp:
+		json.dump(data, fp)
 
 def multiply_n(number, n):
 	result = 1
@@ -37,28 +42,29 @@ def seconds_to_time(number_of_seconds):
 	result = str(datetime.timedelta(seconds=number_of_seconds))
 	return result
 
-def get_ratio():
-	return 2.085
-
 def get_pace(distance, time):
-	pace = seconds_to_time(time_to_seconds(time) / distance)
+	""" Calculate pace based on distance in kilometers and time as seconds. Returns: seconds """
+	pace = (time / distance)
 	return pace
 
 def get_time_by_pace(distance, pace):
-	time = seconds_to_time(distance * time_to_seconds(pace))
+	""" Calculate time based on distance in kilometers and pace as seconds. Returns: seconds """
+	time = (distance * pace)
 	return time
 
 # ------------------------ [ main functions ] ---------------------------------
 
 def linear(desired_distance, pace):
-	predicted_time = get_time_by_pace(desired_distance, pace)
+	""" Calculate linear time prediction based on distance in kilometers and pace as time string. Returns: seconds """
+	predicted_time = get_time_by_pace(desired_distance, time_to_seconds(pace))
 
 	return predicted_time
 
 def riegel(desired_distance, distance, pace, degradation_coefficient):
+	""" Calculate time prediction using Pete Riegel formula. Returns: seconds """
 	# T2 = T1 * (D2 / D1)^C
-	time = get_time_by_pace(distance, pace)
-	predicted_time = seconds_to_time(time_to_seconds(time) * ( desired_distance / distance ) ** degradation_coefficient)
+	time_seconds = get_time_by_pace(distance, time_to_seconds(pace))
+	predicted_time = time_seconds * ( desired_distance / distance ) ** degradation_coefficient
 
 	return predicted_time
 
@@ -86,6 +92,8 @@ def get_grade(distance, elevation):
 	return grade
 
 def calculate(distance, elevation):
+	prediction_data = []
+
 	degradation_coefficient = get_coefficient_by_grade(get_grade(distance, elevation))
 
 	data = get_data('strava.csv')
@@ -93,17 +101,46 @@ def calculate(distance, elevation):
 	for num, run in enumerate(data):
 		print "Run %s" % (num+1)
 
-		print "Linear Pace prediction: %s" % linear(distance, get_pace(run['distance'], run['time']))
-		print "Linear GAP prediction: %s" % linear(distance, run['gap'])
+		LP00 = linear(distance, run['pace'])
+		PR0H = riegel(distance, run['distance'], run['pace'], degradation_coefficient_high)
+		PRGH = riegel(distance, run['distance'], run['gap'], degradation_coefficient_high)
+		PR0M = riegel(distance, run['distance'], run['gap'], degradation_coefficient)
+		LPG0 = linear(distance, run['gap'])
+		PR0L = riegel(distance, run['distance'], run['pace'], degradation_coefficient_low)
+		PRGL = riegel(distance, run['distance'], run['gap'], degradation_coefficient_low)		
 
-		print "Pete Riegel prediction (%s): %s" % (degradation_coefficient_high, riegel(distance, run['distance'], run['pace'], degradation_coefficient_high))
-		print "Pete Riegel prediction (%s): %s" % (degradation_coefficient_low, riegel(distance, run['distance'], run['pace'], degradation_coefficient_low))
+		prediction_data_value = {
+			'LP00': {'seconds': LP00, 'time': seconds_to_time(LP00)},
+			'PR0H': {'seconds': PR0H, 'time': seconds_to_time(PR0H)},
+			'PRGH': {'seconds': PRGH, 'time': seconds_to_time(PRGH)},
+			'PR0M': {'seconds': PR0M, 'time': seconds_to_time(PR0M)},
+			'LPG0': {'seconds': LPG0, 'time': seconds_to_time(LPG0)},
+			'PR0L': {'seconds': PR0L, 'time': seconds_to_time(PR0L)},
+			'PRGL': {'seconds': PRGL, 'time': seconds_to_time(PRGL)},
+		}
+		prediction_data.append(prediction_data_value)
 
-		print "Pete Riegel GAP prediction (%s): %s" % (degradation_coefficient_high, riegel(distance, run['distance'], run['gap'], degradation_coefficient_high))
-		print "Pete Riegel GAP prediction (%s): %s" % (degradation_coefficient_low, riegel(distance, run['distance'], run['gap'], degradation_coefficient_low))
+		print "Top limit"
+		# Linear pace
+		print "LP00 prediction: %s" % prediction_data_value['LP00']['time']
+		# Pete Riegel (high)
+		print "PR0H prediction: %s" % prediction_data_value['PR0H']['time']
+		# Pete Riegel GAP (high)
+		print "PRGH prediction: %s" % prediction_data_value['PRGH']['time']
 
-		print "Pete Riegel prediction by elevation grade (%s): %s" % (degradation_coefficient, riegel(distance, run['distance'], run['gap'], degradation_coefficient))
+		print "Middle limit"
+		# Pete Riegel by elevation grade
+		print "PR0M prediction: %s" % prediction_data_value['PR0M']['time']
+
+		print "Low limit"
+		# Linear GAP
+		print "LPG0 prediction: %s" % prediction_data_value['LPG0']['time']
+		# Pete Riegel (low)
+		print "PR0L prediction: %s" % prediction_data_value['PR0L']['time']
+		# Pete Riegel GAP (high)
+		print "PRGL prediction: %s" % prediction_data_value['PRGL']['time']
 
 		print "\n"
+	save_json_data('output.json', prediction_data)
 
 calculate(42.195, 339)
