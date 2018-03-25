@@ -22,10 +22,10 @@
         var data = new google.visualization.DataTable();
 
         var options = {
-          title: 'Marthon Time prediction',
+          title: 'Rotorua Marathon 2018 time prediction',
           curveType: 'function',
           legend: { position: 'bottom' },
-          yAxis: {'format': 'HH:ii:ss'},
+          vAxis: {'format': 'HH:mm:ss'},
           series: {
             0: { lineWidth: 2 },
             1: { lineWidth: 2 },
@@ -50,14 +50,14 @@
           if (!isColummnsPopulated) {
             data.addColumn('datetime', predictionType);
           }
-
-          row.push(new Date('May 5, 2018 ' + jsonData[num][predictionType]['time']));
+          row.push({v: new Date('May 5, 2018 ' + jsonData[num][predictionType]['time']), f:jsonData[num][predictionType]['time']});
         }
+
         if (!isColummnsPopulated) {
           // Add a sub 4 line
           data.addColumn({'type': 'datetime', 'label': 'Sub 4'});
         }
-        row.push(new Date('May 5, 2018 03:59:59'));
+        row.push({v: new Date('May 5, 2018 03:59:59'), f:'03:59:59'});
         isColummnsPopulated = true;
         
         data.addRow(row);
