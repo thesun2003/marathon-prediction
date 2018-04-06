@@ -104,19 +104,21 @@ def calculate(distance, elevation):
 		LP00 = linear(distance, run['pace'])
 		PR0H = riegel(distance, run['distance'], run['pace'], degradation_coefficient_high)
 		PRGH = riegel(distance, run['distance'], run['gap'], degradation_coefficient_high)
-		PR0M = riegel(distance, run['distance'], run['gap'], degradation_coefficient)
+		PR0M = riegel(distance, run['distance'], run['pace'], degradation_coefficient)
+		PRGM = riegel(distance, run['distance'], run['gap'], degradation_coefficient)
 		LPG0 = linear(distance, run['gap'])
 		PR0L = riegel(distance, run['distance'], run['pace'], degradation_coefficient_low)
 		PRGL = riegel(distance, run['distance'], run['gap'], degradation_coefficient_low)		
 
 		prediction_data_value = {
-			'LP00': {'seconds': LP00, 'time': seconds_to_time(LP00)},
-			'PR0H': {'seconds': PR0H, 'time': seconds_to_time(PR0H)},
-			'PRGH': {'seconds': PRGH, 'time': seconds_to_time(PRGH)},
-			'PR0M': {'seconds': PR0M, 'time': seconds_to_time(PR0M)},
-			'LPG0': {'seconds': LPG0, 'time': seconds_to_time(LPG0)},
-			'PR0L': {'seconds': PR0L, 'time': seconds_to_time(PR0L)},
-			'PRGL': {'seconds': PRGL, 'time': seconds_to_time(PRGL)},
+			'LP00': {'time': seconds_to_time(LP00)},
+			'PR0H': {'time': seconds_to_time(PR0H)},
+			'PRGH': {'time': seconds_to_time(PRGH)},
+			'PR0M': {'time': seconds_to_time(PR0M)},
+			'PRGM': {'time': seconds_to_time(PRGM)},
+			'LPG0': {'time': seconds_to_time(LPG0)},
+			'PR0L': {'time': seconds_to_time(PR0L)},
+			'PRGL': {'time': seconds_to_time(PRGL)},
 		}
 		prediction_data.append(prediction_data_value)
 
@@ -131,6 +133,8 @@ def calculate(distance, elevation):
 		print "Middle limit"
 		# Pete Riegel by elevation grade
 		print "PR0M prediction: %s" % prediction_data_value['PR0M']['time']
+		# Pete Riegel GAP by elevation grade
+		print "PRGM prediction: %s" % prediction_data_value['PRGM']['time']
 
 		print "Low limit"
 		# Linear GAP
