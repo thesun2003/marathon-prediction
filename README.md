@@ -1,4 +1,5 @@
-# marathon.prediction (https://thesun2003.github.io/marathon-prediction/)
+# marathon-prediction
+https://thesun2003.github.io/marathon-prediction/
 
 * Linear formula
 * Linear GAP formula
